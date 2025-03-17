@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Player } from './entities/Player';
 import { Arena } from './entities/Arena';
 import { ClickIndicator } from './entities/ClickIndicator';
+import { TargetCursor } from './entities/TargetCursor';
 import * as dat from 'dat.gui';
 
 export const Game: React.FC = () => {
@@ -14,6 +15,7 @@ export const Game: React.FC = () => {
   const sceneRef = useRef<THREE.Scene | null>(null);
   const targetPositionRef = useRef<THREE.Vector3 | null>(null);
   const clickIndicatorsRef = useRef<ClickIndicator[]>([]);
+  const targetCursorRef = useRef<TargetCursor | null>(null);
   const lastTimeRef = useRef<number>(0);
   const guiRef = useRef<dat.GUI | null>(null);
 
@@ -82,6 +84,29 @@ export const Game: React.FC = () => {
       }
     });
 
+    // Target cursor controls
+    const cursorFolder = gui.addFolder('Target Cursor');
+    const cursorParams = {
+      size: 0.5,
+      color: '#00ff00',
+      opacity: 0.8
+    };
+    cursorFolder.add(cursorParams, 'size', 0.1, 2).onChange((value) => {
+      if (targetCursorRef.current) {
+        targetCursorRef.current.setSize(value);
+      }
+    });
+    cursorFolder.addColor(cursorParams, 'color').onChange((value) => {
+      if (targetCursorRef.current) {
+        targetCursorRef.current.setColor(parseInt(value.replace('#', ''), 16));
+      }
+    });
+    cursorFolder.add(cursorParams, 'opacity', 0, 1).onChange((value) => {
+      if (targetCursorRef.current) {
+        targetCursorRef.current.setOpacity(value);
+      }
+    });
+
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -104,6 +129,11 @@ export const Game: React.FC = () => {
     const player = new Player(scene, new THREE.Vector3(0, 0, 0));
     playerRef.current = player;
 
+    // Create target cursor
+    const targetCursor = new TargetCursor();
+    targetCursorRef.current = targetCursor;
+    scene.add(targetCursor.getMesh());
+
     // Add player to scene
     scene.add(player.getMesh());
     scene.add(player.getDirectionArrow());
@@ -112,6 +142,24 @@ export const Game: React.FC = () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+    const handleMouseMove = (event: MouseEvent) => {
+      // Calculate mouse position in normalized device coordinates (-1 to +1)
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      // Update the picking ray with the camera and mouse position
+      raycaster.setFromCamera(mouse, camera);
+
+      // Calculate intersection with the ground plane
+      const intersectionPoint = new THREE.Vector3();
+      raycaster.ray.intersectPlane(plane, intersectionPoint);
+
+      // Update target cursor position
+      if (targetCursorRef.current) {
+        targetCursorRef.current.update(intersectionPoint);
+      }
+    };
 
     const handleMouseClick = (event: MouseEvent) => {
       if (event.button !== 2) return; // Only handle right click
@@ -142,6 +190,7 @@ export const Game: React.FC = () => {
       event.preventDefault();
     };
 
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseClick);
     window.addEventListener('contextmenu', handleContextMenu);
 
@@ -199,6 +248,7 @@ export const Game: React.FC = () => {
 
     // Cleanup
     return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseClick);
       window.removeEventListener('contextmenu', handleContextMenu);
       window.removeEventListener('resize', handleResize);
@@ -206,6 +256,11 @@ export const Game: React.FC = () => {
       // Clean up click indicators
       clickIndicatorsRef.current.forEach(indicator => indicator.dispose(scene));
       clickIndicatorsRef.current = [];
+      
+      // Clean up target cursor
+      if (targetCursorRef.current) {
+        targetCursorRef.current.dispose();
+      }
       
       // Clean up debug panel
       if (guiRef.current) {
