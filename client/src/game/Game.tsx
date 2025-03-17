@@ -26,7 +26,7 @@ export const Game: React.FC = () => {
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(
-      50,
+      75,
       window.innerWidth / window.innerHeight,
       0.1,
       1000
@@ -47,12 +47,12 @@ export const Game: React.FC = () => {
     const cameraParams = {
       height: 50,
       distance: 25,
-      fov: 50
+      fov: 75
     };
-    cameraFolder.add(cameraParams, 'height', 10, 50).onChange((value) => {
+    cameraFolder.add(cameraParams, 'height', 10, 100).onChange((value) => {
       cameraOffset.y = value;
     });
-    cameraFolder.add(cameraParams, 'distance', 10, 50).onChange((value) => {
+    cameraFolder.add(cameraParams, 'distance', 10, 100).onChange((value) => {
       cameraOffset.z = value;
     });
     cameraFolder.add(cameraParams, 'fov', 30, 120).onChange((value) => {
@@ -63,9 +63,9 @@ export const Game: React.FC = () => {
     // Player controls
     const playerFolder = gui.addFolder('Player');
     const playerParams = {
-      speed: 0.05
+      speed: 0.03
     };
-    playerFolder.add(playerParams, 'speed', 0.01, 0.2).onChange((value) => {
+    playerFolder.add(playerParams, 'speed', 0.001, 0.1).onChange((value) => {
       if (playerRef.current) {
         playerRef.current.setSpeed(value);
       }
@@ -74,9 +74,9 @@ export const Game: React.FC = () => {
     // Arena controls
     const arenaFolder = gui.addFolder('Arena');
     const arenaParams = {
-      size: 40
+      size: 100
     };
-    arenaFolder.add(arenaParams, 'size', 20, 100).onChange((value) => {
+    arenaFolder.add(arenaParams, 'size', 20, 200).onChange((value) => {
       if (arenaRef.current) {
         arenaRef.current.setSize(value);
       }
@@ -103,6 +103,10 @@ export const Game: React.FC = () => {
     
     const player = new Player(scene, new THREE.Vector3(0, 0, 0));
     playerRef.current = player;
+
+    // Add player to scene
+    scene.add(player.getMesh());
+    scene.add(player.getDirectionArrow());
 
     // Mouse controls
     const raycaster = new THREE.Raycaster();
