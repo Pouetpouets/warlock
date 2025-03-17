@@ -1,58 +1,94 @@
 import * as THREE from 'three';
 
 export class Arena {
-  private ground: THREE.Mesh;
-  private lavaBoundary: THREE.Mesh;
-  private size: number = 100; // Changed from 40 to 100
+  private mesh: THREE.Mesh;
+  private size: number;
+  private material: THREE.MeshStandardMaterial;
+  private textures: {
+    diffuse: THREE.Texture;
+    normal: THREE.Texture;
+    roughness: THREE.Texture;
+    displacement: THREE.Texture;
+    specular: THREE.Texture;
+  };
 
-  constructor(scene: THREE.Scene) {
-    // Create ground
-    const groundGeometry = new THREE.PlaneGeometry(this.size, this.size);
-    const groundMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x333333,
+  constructor(scene: THREE.Scene, size: number = 100) {
+    this.size = size;
+
+    // Create ground geometry
+    const geometry = new THREE.PlaneGeometry(this.size, this.size);
+    geometry.rotateX(-Math.PI / 2);
+
+    // Load textures
+    const textureLoader = new THREE.TextureLoader();
+    this.textures = {
+      diffuse: textureLoader.load('/textures/ground/rocky_terrain.blend/textures/rocky_terrain_02_diff_4k.jpg'),
+      normal: textureLoader.load('/textures/ground/rocky_terrain.blend/textures/rocky_terrain_02_nor_gl_4k.exr'),
+      roughness: textureLoader.load('/textures/ground/rocky_terrain.blend/textures/rocky_terrain_02_rough_4k.exr'),
+      displacement: textureLoader.load('/textures/ground/rocky_terrain.blend/textures/rocky_terrain_02_disp_4k.png'),
+      specular: textureLoader.load('/textures/ground/rocky_terrain.blend/textures/rocky_terrain_02_spec_4k.png')
+    };
+
+    // Configure textures
+    this.setTextureRepeat(4);
+
+    // Create material
+    this.material = new THREE.MeshStandardMaterial({
+      map: this.textures.diffuse,
+      normalMap: this.textures.normal,
+      roughnessMap: this.textures.roughness,
+      displacementMap: this.textures.displacement,
+      displacementScale: 0.2,
+      metalness: 0.1,
       roughness: 0.8,
-      metalness: 0.2
+      envMapIntensity: 1.0
     });
-    this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    this.ground.rotation.x = -Math.PI / 2;
-    this.ground.position.y = -0.5;
-    scene.add(this.ground);
 
-    // Create lava boundary
-    const lavaGeometry = new THREE.TorusGeometry(this.size / 2, 0.5, 16, 100);
-    const lavaMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0xff4400,
-      emissive: 0xff2200,
-      emissiveIntensity: 0.5
-    });
-    this.lavaBoundary = new THREE.Mesh(lavaGeometry, lavaMaterial);
-    this.lavaBoundary.rotation.x = Math.PI / 2;
-    scene.add(this.lavaBoundary);
-  }
+    // Create mesh
+    this.mesh = new THREE.Mesh(geometry, this.material);
+    this.mesh.receiveShadow = true;
 
-  public shrink(amount: number) {
-    this.size -= amount;
-    this.ground.geometry.dispose();
-    this.ground.geometry = new THREE.PlaneGeometry(this.size, this.size);
-    this.ground.geometry.needsUpdate = true;
-
-    this.lavaBoundary.geometry.dispose();
-    this.lavaBoundary.geometry = new THREE.TorusGeometry(this.size / 2, 0.5, 16, 100);
-    this.lavaBoundary.geometry.needsUpdate = true;
-  }
-
-  public getSize(): number {
-    return this.size;
+    // Add to scene
+    scene.add(this.mesh);
   }
 
   public setSize(size: number) {
     this.size = size;
-    this.ground.geometry.dispose();
-    this.ground.geometry = new THREE.PlaneGeometry(this.size, this.size);
-    this.ground.geometry.needsUpdate = true;
+    const geometry = new THREE.PlaneGeometry(this.size, this.size);
+    geometry.rotateX(-Math.PI / 2);
+    this.mesh.geometry.dispose();
+    this.mesh.geometry = geometry;
+  }
 
-    this.lavaBoundary.geometry.dispose();
-    this.lavaBoundary.geometry = new THREE.TorusGeometry(this.size / 2, 0.5, 16, 100);
-    this.lavaBoundary.geometry.needsUpdate = true;
+  public setTextureRepeat(repeat: number) {
+    Object.values(this.textures).forEach(texture => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeat, repeat);
+    });
+  }
+
+  public setDisplacementScale(scale: number) {
+    this.material.displacementScale = scale;
+  }
+
+  public setMetalness(metalness: number) {
+    this.material.metalness = metalness;
+  }
+
+  public setRoughness(roughness: number) {
+    this.material.roughness = roughness;
+  }
+
+  public setEnvMapIntensity(intensity: number) {
+    this.material.envMapIntensity = intensity;
+  }
+
+  public dispose() {
+    if (this.mesh.parent) {
+      this.mesh.parent.remove(this.mesh);
+    }
+    this.mesh.geometry.dispose();
+    this.material.dispose();
+    Object.values(this.textures).forEach(texture => texture.dispose());
   }
 } 

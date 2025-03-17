@@ -76,11 +76,41 @@ export const Game: React.FC = () => {
     // Arena controls
     const arenaFolder = gui.addFolder('Arena');
     const arenaParams = {
-      size: 100
+      size: 100,
+      textureRepeat: 4,
+      displacementScale: 0.2,
+      metalness: 0.1,
+      roughness: 0.8,
+      envMapIntensity: 1.0
     };
     arenaFolder.add(arenaParams, 'size', 20, 200).onChange((value) => {
       if (arenaRef.current) {
         arenaRef.current.setSize(value);
+      }
+    });
+    arenaFolder.add(arenaParams, 'textureRepeat', 1, 10).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setTextureRepeat(value);
+      }
+    });
+    arenaFolder.add(arenaParams, 'displacementScale', 0, 1).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setDisplacementScale(value);
+      }
+    });
+    arenaFolder.add(arenaParams, 'metalness', 0, 1).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setMetalness(value);
+      }
+    });
+    arenaFolder.add(arenaParams, 'roughness', 0, 1).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setRoughness(value);
+      }
+    });
+    arenaFolder.add(arenaParams, 'envMapIntensity', 0, 2).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setEnvMapIntensity(value);
       }
     });
 
@@ -123,7 +153,7 @@ export const Game: React.FC = () => {
     scene.add(directionalLight);
 
     // Create arena and player
-    const arena = new Arena(scene);
+    const arena = new Arena(scene, arenaParams.size);
     arenaRef.current = arena;
     
     const player = new Player(scene, new THREE.Vector3(0, 0, 0));
