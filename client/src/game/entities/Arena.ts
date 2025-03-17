@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 export class Arena {
   private mesh: THREE.Mesh;
+  private lavaBoundary: THREE.Mesh;
   private size: number;
   private material: THREE.MeshStandardMaterial;
   private textures: {
@@ -48,8 +49,22 @@ export class Arena {
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.receiveShadow = true;
 
+    // Create lava boundary
+    const lavaGeometry = new THREE.TorusGeometry(this.size / 2, 2, 16, 100);
+    const lavaMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff4400,
+      emissive: 0xff2200,
+      emissiveIntensity: 0.5,
+      metalness: 0.8,
+      roughness: 0.2
+    });
+    this.lavaBoundary = new THREE.Mesh(lavaGeometry, lavaMaterial);
+    this.lavaBoundary.rotation.x = Math.PI / 2;
+    this.lavaBoundary.position.y = -0.1; // Slightly below the ground
+
     // Add to scene
     scene.add(this.mesh);
+    scene.add(this.lavaBoundary);
   }
 
   public setSize(size: number) {
@@ -58,6 +73,11 @@ export class Arena {
     geometry.rotateX(-Math.PI / 2);
     this.mesh.geometry.dispose();
     this.mesh.geometry = geometry;
+
+    // Update lava boundary
+    const lavaGeometry = new THREE.TorusGeometry(this.size / 2, 2, 16, 100);
+    this.lavaBoundary.geometry.dispose();
+    this.lavaBoundary.geometry = lavaGeometry;
   }
 
   public setTextureRepeat(repeat: number) {
@@ -83,12 +103,33 @@ export class Arena {
     this.material.envMapIntensity = intensity;
   }
 
+  public setLavaColor(color: number) {
+    const lavaMaterial = this.lavaBoundary.material as THREE.MeshStandardMaterial;
+    lavaMaterial.color.setHex(color);
+  }
+
+  public setLavaEmissiveIntensity(intensity: number) {
+    const lavaMaterial = this.lavaBoundary.material as THREE.MeshStandardMaterial;
+    lavaMaterial.emissiveIntensity = intensity;
+  }
+
+  public setLavaWidth(width: number) {
+    const lavaGeometry = new THREE.TorusGeometry(this.size / 2, width, 16, 100);
+    this.lavaBoundary.geometry.dispose();
+    this.lavaBoundary.geometry = lavaGeometry;
+  }
+
   public dispose() {
     if (this.mesh.parent) {
       this.mesh.parent.remove(this.mesh);
     }
+    if (this.lavaBoundary.parent) {
+      this.lavaBoundary.parent.remove(this.lavaBoundary);
+    }
     this.mesh.geometry.dispose();
+    this.lavaBoundary.geometry.dispose();
     this.material.dispose();
+    (this.lavaBoundary.material as THREE.Material).dispose();
     Object.values(this.textures).forEach(texture => texture.dispose());
   }
 } 

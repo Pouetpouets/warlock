@@ -81,7 +81,10 @@ export const Game: React.FC = () => {
       displacementScale: 0.2,
       metalness: 0.1,
       roughness: 0.8,
-      envMapIntensity: 1.0
+      envMapIntensity: 1.0,
+      lavaColor: '#ff4400',
+      lavaEmissiveIntensity: 0.5,
+      lavaWidth: 2
     };
     arenaFolder.add(arenaParams, 'size', 20, 200).onChange((value) => {
       if (arenaRef.current) {
@@ -111,6 +114,21 @@ export const Game: React.FC = () => {
     arenaFolder.add(arenaParams, 'envMapIntensity', 0, 2).onChange((value) => {
       if (arenaRef.current) {
         arenaRef.current.setEnvMapIntensity(value);
+      }
+    });
+    arenaFolder.addColor(arenaParams, 'lavaColor').onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setLavaColor(parseInt(value.replace('#', ''), 16));
+      }
+    });
+    arenaFolder.add(arenaParams, 'lavaEmissiveIntensity', 0, 2).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setLavaEmissiveIntensity(value);
+      }
+    });
+    arenaFolder.add(arenaParams, 'lavaWidth', 0.1, 5).onChange((value) => {
+      if (arenaRef.current) {
+        arenaRef.current.setLavaWidth(value);
       }
     });
 
