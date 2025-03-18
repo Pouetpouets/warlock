@@ -1,12 +1,14 @@
-# [Game Title] - Game Design Document
+# Warlock - Game Design Document
 
 ## Game Overview
+remake of the warcraft 3 custom map
 **Working Title:** [Warlock]  
 **Genre:** [Arena multiplayer]  
 **Platforms:** [PC]  
 
 ## Executive Summary
-*Warlock is a multiplayer survival, where players have to be the last one surviving in the arena. You can either kill your opponent with your spells or push them outside the map, into the fire*
+*PvP arena game in which you must use magic and quick reflexes to outsmart and obliterate your opponent. Set in a world gripped by a war of magic, you and other warlocks fight for control over rounds of battle in areas of power.*
+
 
 ## Core Concept
 *Spells selection, talent tree, arena, push mechanics*
@@ -18,16 +20,16 @@
 ### Core Mechanics
 *The primary rules and systems that define how the game is played.*
 
-- Mechanic 1: [Round]
-- Mechanic 2: [Sepll selection]
-- Mechanic 3: [Player versus player]
+- Mechanic 1: [PvP arana]
+- Mechanic 2: [Magic spells]
+- Mechanic 3: [Rounds]
 - Mechanic 4: [Map reduces over and over until minimum size]
 
 
 ### Game Flow
-*user vote for number of round*
+*Players vote for number of round and define game rules*
 *At the begining of each round, player can buy spells or items*
-*Round start, player have to kills eachothers, with spells or with terrain*
+*Round start, player have to kills eachothers with spells or pushed outside the terrain, throwed in lava*
 *While trying to kill each others, the map size reduce, surrounded by lava*
 *Round finish, the last player surviving get a point*
 *The game end once the number of round selected is over*
@@ -45,7 +47,6 @@
 *Spells have coldowns*
 *Their is a score board*
 *Health bar is display on top of the player*
-
 
 
 
